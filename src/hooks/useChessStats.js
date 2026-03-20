@@ -10,6 +10,9 @@ import {
   getBestWin,
   getCurrentStreak,
   getLastActive,
+  getAvgOpponentRating,
+  getAvgTimePerMove,
+  getMostPlayedOpenings,
 } from '../utils/chesscom';
 
 const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
@@ -54,6 +57,9 @@ export function useChessStats(config) {
           const bestWin = getBestWin(games, username, config.format);
           const streak = getCurrentStreak(games, username, config.format);
           const lastActive = getLastActive(games, username, config.format);
+          const avgOpponentRating = getAvgOpponentRating(games, username, config.format);
+          const avgTimePerMove = getAvgTimePerMove(games, username, config.format);
+          const topOpenings = getMostPlayedOpenings(games, username, config.format);
 
           const totalGames = ratingData.record.win + ratingData.record.loss + ratingData.record.draw;
           const winRate = totalGames > 0 ? ((ratingData.record.win / totalGames) * 100).toFixed(1) : 0;
@@ -73,6 +79,9 @@ export function useChessStats(config) {
             bestWin,
             streak,
             lastActive,
+            avgOpponentRating,
+            avgTimePerMove,
+            topOpenings,
             error: null,
           };
         } catch (err) {

@@ -133,13 +133,40 @@ export default function PlayerCard({ player, rank, isLeader, targetRating, start
           )}
 
           {/* Extra stats */}
-          <div className="text-xs text-gray-400 mb-3">
-            🏅 Best rating: <span className="text-[#e8dcc8]">{player.bestRating}</span>
-            {' | '}
-            W/D/L: <span className="text-green-400">{player.record?.win}</span>/
-            <span className="text-gray-300">{player.record?.draw}</span>/
-            <span className="text-red-400">{player.record?.loss}</span>
+          <div className="text-xs text-gray-400 mb-3 space-y-1">
+            <div>
+              🏅 Best rating: <span className="text-[#e8dcc8]">{player.bestRating}</span>
+              {' | '}
+              W/D/L: <span className="text-green-400">{player.record?.win}</span>/
+              <span className="text-gray-300">{player.record?.draw}</span>/
+              <span className="text-red-400">{player.record?.loss}</span>
+            </div>
+            {player.avgOpponentRating && (
+              <div>
+                🎯 Avg opponent: <span className="text-[#e8dcc8]">{player.avgOpponentRating}</span>
+              </div>
+            )}
+            {player.avgTimePerMove && (
+              <div>
+                ⏱️ Avg time/move: <span className="text-[#e8dcc8]">{player.avgTimePerMove}s</span>
+              </div>
+            )}
           </div>
+
+          {/* Top openings */}
+          {player.topOpenings && player.topOpenings.length > 0 && (
+            <div className="mb-3">
+              <div className="text-xs text-gray-400 mb-1">♟️ Most Played Openings</div>
+              <div className="space-y-1">
+                {player.topOpenings.map((o, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs">
+                    <span className="text-[#e8dcc8] truncate flex-1">{o.name}</span>
+                    <span className="text-gray-500 flex-shrink-0">{o.count} games</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Rating chart */}
           <div className="text-xs text-gray-400 mb-1">📊 Rating History</div>

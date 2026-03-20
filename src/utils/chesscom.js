@@ -188,6 +188,101 @@ export function getLastActive(games, username, format) {
   return filtered.length > 0 ? filtered[0].end_time * 1000 : null;
 }
 
+// Average opponent rating from recent games
+export function getAvgOpponentRating(games, username, format) {
+  const timeClass = format.replace('chess_', '');
+  const lowerUser = username.toLowerCase();
+  let total = 0;
+  let count = 0;
+
+  for (const g of games) {
+    if (g.time_class !== timeClass) continue;
+    const isWhite = g.white?.username?.toLowerCase() === lowerUser;
+    const oppRating = isWhite ? g.black?.rating : g.white?.rating;
+    if (oppRating) {
+      total += oppRating;
+      count++;
+    }
+  }
+
+  return count > 0 ? Math.round(total / count) : null;
+}
+
+// Average time per move (seconds) from recent games
+export function getAvgTimePerMove(games, username, format) {
+  const timeClass = format.replace('chess_', '');
+  const lowerUser = username.toLowerCase();
+  let totalTime = 0;
+  let totalMoves = 0;
+
+  for (const g of games) {
+    if (g.time_class !== timeClass) continue;
+    if (!g.pgn) continue;
+
+    const isWhite = g.white?.username?.toLowerCase() === lowerUser;
+
+    // Parse clk timestamps from PGN
+    const clkMatches = [...g.pgn.matchAll(/\[%clk (\d+):(\d+):(\d+(?:\.\d+)?)\]/g)];
+    if (clkMatches.length < 2) continue;
+
+    // Filter to only this player's moves (white = even indices 0,2,4; black = odd 1,3,5)
+    const playerClks = clkMatches.filter((_, i) => isWhite ? i % 2 === 0 : i % 2 === 1);
+    if (playerClks.length < 2) continue;
+
+    for (let i = 1; i < playerClks.length; i++) {
+      const prev = parseInt(playerClks[i - 1][1]) * 3600 + parseInt(playerClks[i - 1][2]) * 60 + parseFloat(playerClks[i - 1][3]);
+      const curr = parseInt(playerClks[i][1]) * 3600 + parseInt(playerClks[i][2]) * 60 + parseFloat(playerClks[i][3]);
+      const elapsed = prev - curr;
+      if (elapsed > 0) {
+        totalTime += elapsed;
+        totalMoves++;
+      }
+    }
+  }
+
+  return totalMoves > 0 ? (totalTime / totalMoves).toFixed(1) : null;
+}
+
+// Most played openings from PGN ECO/Opening headers
+export function getMostPlayedOpenings(games, username, format, topN = 3) {
+  const timeClass = format.replace('chess_', '');
+  const lowerUser = username.toLowerCase();
+  const openingCounts = {};
+
+  for (const g of games) {
+    if (g.time_class !== timeClass) continue;
+    if (!g.pgn) continue;
+
+    const isWhite = g.white?.username?.toLowerCase() === lowerUser;
+
+    // Extract ECOUrl or Opening header from PGN
+    const openingMatch = g.pgn.match(/\[ECOUrl "https:\/\/www\.chess\.com\/openings\/([^"]+)"\]/);
+    let opening = openingMatch
+      ? decodeURIComponent(openingMatch[1]).replace(/-/g, ' ').replace(/\.\.\./g, '').split(/\d/)[0].trim()
+      : null;
+
+    if (!opening) {
+      // Fallback: try Opening header
+      const altMatch = g.pgn.match(/\[Opening "([^"]+)"\]/);
+      opening = altMatch ? altMatch[1] : null;
+    }
+
+    if (!opening) continue;
+
+    // Shorten to base opening name (first 2-3 words)
+    const words = opening.split(' ');
+    const shortName = words.slice(0, Math.min(3, words.length)).join(' ');
+
+    const key = `${isWhite ? 'W' : 'B'}: ${shortName}`;
+    openingCounts[key] = (openingCounts[key] || 0) + 1;
+  }
+
+  return Object.entries(openingCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, topN)
+    .map(([name, count]) => ({ name, count }));
+}
+
 // Fetch recent archive months (last 3 months by default)
 export async function fetchRecentGames(username, monthsBack = 4) {
   const archives = await fetchArchiveList(username);
