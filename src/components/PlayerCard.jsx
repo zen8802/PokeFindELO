@@ -33,8 +33,21 @@ export default function PlayerCard({ player, rank, isLeader, targetRating, start
     >
       {/* Main row */}
       <div className="flex items-center gap-3">
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#2d4a2d] flex items-center justify-center text-sm font-bold text-[#d4a843]">
-          {rank}
+        <div className="flex-shrink-0 relative">
+          {player.avatar ? (
+            <img
+              src={player.avatar}
+              alt={player.username}
+              className="w-10 h-10 rounded-full border-2 border-[#2d4a2d] object-cover"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-[#2d4a2d] flex items-center justify-center text-sm font-bold text-[#d4a843]">
+              {player.username.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-[#0f1f0f] border border-[#2d4a2d] flex items-center justify-center text-[10px] font-bold text-[#d4a843]">
+            {rank}
+          </div>
         </div>
 
         <div className="flex-1 min-w-0">

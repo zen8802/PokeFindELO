@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
+  fetchPlayerProfile,
   fetchPlayerStats,
   fetchRecentGames,
   getRatingFromStats,
@@ -32,7 +33,8 @@ export function useChessStats(config) {
     await Promise.all(
       config.players.map(async (username) => {
         try {
-          const [stats, games] = await Promise.all([
+          const [profile, stats, games] = await Promise.all([
+            fetchPlayerProfile(username),
             fetchPlayerStats(username),
             fetchRecentGames(username),
           ]);
@@ -58,6 +60,7 @@ export function useChessStats(config) {
 
           results[username] = {
             username,
+            avatar: profile?.avatar || null,
             currentRating: ratingData.current,
             bestRating: ratingData.best,
             startRating: startRating || ratingData.current,

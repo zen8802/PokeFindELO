@@ -1,5 +1,13 @@
 const BASE_URL = 'https://api.chess.com/pub/player';
 
+export async function fetchPlayerProfile(username) {
+  const res = await fetch(`${BASE_URL}/${username.toLowerCase()}`, {
+    headers: { Accept: 'application/json' },
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
 export async function fetchPlayerStats(username) {
   const res = await fetch(`${BASE_URL}/${username.toLowerCase()}/stats`, {
     headers: { Accept: 'application/json' },
