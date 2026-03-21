@@ -7,6 +7,7 @@ export default function AdminPanel({ config, onSave, onClose }) {
   const [newPlayer, setNewPlayer] = useState('');
   const [localConfig, setLocalConfig] = useState({ ...config });
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const handleAuth = (e) => {
     e.preventDefault();
@@ -41,6 +42,16 @@ export default function AdminPanel({ config, onSave, onClose }) {
   const handleSave = () => {
     onSave(localConfig);
     onClose();
+  };
+
+  const handleCopyLink = () => {
+    const { adminPin, ...shareableConfig } = localConfig;
+    const encoded = btoa(JSON.stringify(shareableConfig));
+    const url = `${window.location.origin}${window.location.pathname}#${encoded}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
   };
 
   return (
@@ -166,6 +177,17 @@ export default function AdminPanel({ config, onSave, onClose }) {
             >
               Save & Refresh
             </button>
+
+            {/* Copy share link */}
+            <button
+              onClick={handleCopyLink}
+              className="w-full py-2.5 bg-[#2d4a2d] hover:bg-[#3a5c3a] text-[#e8dcc8] rounded-lg font-semibold transition-colors border border-[#4a7c59]"
+            >
+              {copied ? 'Link Copied!' : 'Copy Share Link'}
+            </button>
+            <p className="text-xs text-gray-500 text-center">
+              Share this link with friends — they'll see the same leaderboard
+            </p>
           </div>
         )}
       </div>
